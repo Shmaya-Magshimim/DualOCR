@@ -22,5 +22,6 @@ if ! command -v uv >/dev/null 2>&1; then
 fi
 
 echo "==> Installing Python and DualOCR's Python packages"
+export UV_HTTP_TIMEOUT="${UV_HTTP_TIMEOUT:-120}"   # slow connections: big packages (Qt) take a while
 uv sync --locked --extra build
 exec uv run --no-sync python scripts/setup.py "$@"

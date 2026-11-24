@@ -14,6 +14,7 @@ if (-not (Get-Command uv -ErrorAction SilentlyContinue)) {
 }
 
 Write-Host "==> Installing Python and DualOCR's Python packages"
+if (-not $env:UV_HTTP_TIMEOUT) { $env:UV_HTTP_TIMEOUT = "120" }   # slow connections: big packages take a while
 uv sync --locked --extra build
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 uv run --no-sync python scripts/setup.py @args

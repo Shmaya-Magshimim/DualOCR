@@ -1,6 +1,6 @@
 # Runs the same setup a user runs, on all three systems: installs Tesseract,
-# downloads the models and llama.cpp, builds the app and checks the build.
-# (Surya's 1.4 GB model isn't downloaded here.)
+# downloads the models and llama.cpp, builds and installs the app, and checks
+# the installed app. (Surya's 1.4 GB model isn't downloaded here.)
 name: Build
 
 on:
@@ -27,16 +27,41 @@ jobs:
       - name: Setup (macOS, Linux)
         if: runner.os != 'Windows'
         run: |
-          ./setup.sh --yes --skip-surya-model --no-install
+          ./setup.sh --yes --skip-surya-model
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
       - name: Setup (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          .\setup.cmd --yes --skip-surya-model --no-install
+          .\setup.cmd --yes --skip-surya-model
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           "$env:USERPROFILE\.local\bin" | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
+
+      - name: Installed app works (macOS)
+        if: runner.os == 'macOS'
+        run: ~/Applications/DualOCR.app/Contents/MacOS/dualocr-cli --check
+
+      - name: Installed app works (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          ~/.local/opt/DualOCR/dualocr-cli --check
+          test -f ~/.local/share/applications/dualocr.desktop
+
+      - name: Installed app works (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          & "$env:LOCALAPPDATA\Programs\DualOCR\dualocr-cli.exe" --check
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          if (-not (Test-Path "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\DualOCR.lnk")) { exit 1 }
+
+      - name: Setup again from Windows PowerShell 5.1 (most PCs have no PowerShell 7)
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          cmd /c "set PSModulePath= && powershell -NoProfile -ExecutionPolicy Bypass -File setup.ps1 --yes --skip-surya-model"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Unit tests
         run: uv run --locked --extra build --extra dev pytest -q tests/test_core.py

@@ -160,6 +160,14 @@ _WIN_TOAST = (
 )
 
 
+def clean_powershell_env(**extra) -> dict:
+    """Environment for starting Windows PowerShell 5.1: a module path inherited
+    from PowerShell 7 stops it from loading its own modules."""
+    env = {k: v for k, v in os.environ.items() if k.upper() != "PSMODULEPATH"}
+    env.update(extra)
+    return env
+
+
 def notify(title: str, text: str) -> None:
     """Desktop notification. Never raises."""
     try:
@@ -168,7 +176,7 @@ def notify(title: str, text: str) -> None:
                             "display notification (item 2 of argv) with title (item 1 of argv)",
                             "-e", "end run", title, text], capture_output=True, timeout=10)
         elif WINDOWS:
-            env = dict(os.environ, DUALOCR_TITLE=title, DUALOCR_TEXT=text)
+            env = clean_powershell_env(DUALOCR_TITLE=title, DUALOCR_TEXT=text)
             subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-Command", _WIN_TOAST],
                            env=env, capture_output=True, timeout=20)
         elif shutil.which("notify-send"):

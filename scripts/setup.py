@@ -343,7 +343,8 @@ def llama_cpp(a) -> None:
         stamp.write_text(name)
         archive.unlink(missing_ok=True)
         info(f"installed {name} ({flavor})")
-    r = subprocess.run([str(server), "--version"], capture_output=True, text=True, timeout=120)
+    r = subprocess.run([str(server), "--version"], capture_output=True, text=True, encoding="utf-8",
+                       errors="replace", timeout=120)
     out = (r.stdout + r.stderr).strip()
     if r.returncode != 0:
         fail(f"the downloaded llama-server doesn't run on this system:\n{out[-800:]}\n"
@@ -427,7 +428,10 @@ def install_app(dist: Path) -> str:
         ps = ("$s = (New-Object -ComObject WScript.Shell).CreateShortcut($env:LNK);"
               "$s.TargetPath = $env:TARGET; $s.WorkingDirectory = $env:WORKDIR; $s.Save()")
         subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-Command", ps], capture_output=True,
-                       env=dict(os.environ, LNK=str(lnk), TARGET=str(target / "DualOCR.exe"), WORKDIR=str(target)))
+                       env={**{k: v for k, v in os.environ.items() if k.upper() != "PSMODULEPATH"},
+                            "LNK": str(lnk), "TARGET": str(target / "DualOCR.exe"), "WORKDIR": str(target)})
+        if not lnk.exists():
+            info("couldn't add the Start menu shortcut (the app itself is installed)")
         return f"{target}\\DualOCR.exe  (in the Start menu as DualOCR)"
 
     target = Path.home() / ".local" / "opt" / "DualOCR"

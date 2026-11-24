@@ -117,10 +117,27 @@ def test_docx_rtl_mixed_and_flags(tmp_path):
 
 
 # ---------------------------------------------------------------- prep
+SERIF_FONTS = [
+    "/System/Library/Fonts/Supplemental/Times New Roman.ttf",          # macOS
+    "C:/Windows/Fonts/times.ttf",                                      # Windows
+    "/usr/share/fonts/truetype/liberation/LiberationSerif-Regular.ttf",  # Linux
+    "/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf",
+    "/usr/share/fonts/dejavu-serif-fonts/DejaVuSerif.ttf",
+    "/usr/share/fonts/TTF/DejaVuSerif.ttf",
+]
+
+
+def _serif_font(size):
+    for f in SERIF_FONTS:
+        if Path(f).exists():
+            return ImageFont.truetype(f, size)
+    pytest.skip("no serif font found to draw a test page")
+
+
 def _text_image(rot=0):
     img = Image.new("RGB", (1700, 2200), "white")
     d = ImageDraw.Draw(img)
-    f = ImageFont.truetype("/System/Library/Fonts/Supplemental/Times New Roman.ttf", 46)
+    f = _serif_font(46)
     y = 150
     for k in range(22):
         d.text((120, y), "The quick brown fox jumps over the lazy dog near the river bank.", font=f, fill="black")

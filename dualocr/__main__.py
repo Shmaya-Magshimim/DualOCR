@@ -27,7 +27,8 @@ def check() -> int:
     tess = shutil.which("tesseract")
     ver = ""
     if tess:
-        r = subprocess.run([tess, "--version"], capture_output=True, text=True, timeout=30)
+        r = subprocess.run([tess, "--version"], capture_output=True, text=True, encoding="utf-8", errors="replace",
+                           timeout=30)
         ver = (r.stdout or r.stderr).splitlines()[0] if (r.stdout or r.stderr) else ""
     line(bool(tess), "Tesseract", f"{tess} ({ver})" if tess else config.install_hint())
     for name in ("heb", "eng", "osd"):
