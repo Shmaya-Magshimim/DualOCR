@@ -32,3 +32,8 @@ scripts/robust.py
 scripts/watch_job.sh
 scripts/install_when_closed.sh
 scripts/build_app.sh
+
+# benchmark downloads, engine cache and per-page outputs (bench/README.md)
+bench/data/
+bench/work/
+bench/results/*/

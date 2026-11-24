@@ -139,6 +139,27 @@ Secret Service keyring on Linux). It's off unless you turn it on.
 
 ## Accuracy
 
+### Public benchmarks
+
+DualOCR compared with the two engines it combines, each used alone, on public
+datasets. Method, more datasets and how to rerun it:
+[bench/README.md](bench/README.md).
+
+| | Tesseract alone | Surya alone | DualOCR Fast | DualOCR Balanced (default) |
+|---|---|---|---|---|
+| Hebrew book pages, square script (34 pages, words right) | 66.0% | 73.8% | **76.2%** | 75.6% |
+| Hebrew book pages, Rashi script (13 pages) | 13.9% | 40.7% | **41.2%** | 40.1% |
+| Hebrew book pages with niqqud (10 pages) | 26.6% | **60.6%** | 60.1% | 53.3% |
+| English rendered pages (40 pages, Surya's own line score) | 89.7 | **97.5** | 97.0 | 96.9 |
+| Noisy scanned English forms (50, word F1) | 49.7 | **80.0** | 79.3 | 79.0 |
+| 1910s typed and handwritten letters (50, tests passed) | 15.9% | 31.7% | **32.5%** | 32.1% |
+
+On Hebrew print DualOCR is more accurate than either engine alone: on the book
+pages it beats Surya alone on 38 of 57 pages and loses on 8. On English,
+Surya alone is about as good.
+
+### The author's documents
+
 Measured on the author's own answer-key documents (not included in this
 repository): a 20-page Hebrew civics handout and a 7-page English handout with
 Hebrew words. The voting model was trained on Hebrew pages 1-10 and English
@@ -161,7 +182,9 @@ scan pages 1, 2 and 4. Hebrew pages 11-20 were never used for training.
   (המנון/המעון), and punctuation details.
 - **Quality presets:** zoomed-in re-reads gave no measurable gain on clean
   scans and a small gain on the blurry one. Fast is as accurate on clean scans;
-  Balanced is the default for safety.
+  Balanced is the default for safety. On the public benchmarks above, though,
+  Balanced was never better than Fast, and on pages with niqqud it was clearly
+  worse (see [bench/README.md](bench/README.md)).
 
 ## Troubleshooting
 
@@ -183,15 +206,18 @@ uv run pytest tests/test_core.py        # fast unit tests
 uv run pytest -m slow                   # real engines (needs eval/synth, see tests/test_e2e.py)
 ```
 
-`eval/` has the scripts that measured the table above (`run_eval.py`,
-`train.py`, `flags.py`, `errs.py`). They expect your own scans in
-`eval/sources/` and answer keys in `eval/gold/`, which are not in the
-repository.
+`eval/` has the scripts that measured the author's-documents table above
+(`run_eval.py`, `train.py`, `flags.py`, `errs.py`). They expect your own scans
+in `eval/sources/` and answer keys in `eval/gold/`, which are not in the
+repository. `bench/` runs the public benchmarks (see
+[bench/README.md](bench/README.md)).
 
 ## Licenses
 
-DualOCR's code is under the [MIT license](LICENSE). Setup downloads other
-projects' files, each under its own license:
+DualOCR's code is under the [MIT license](LICENSE), except
+`bench/olmocr_tests/`, which comes from
+[allenai/olmocr](https://github.com/allenai/olmocr) under Apache-2.0. Setup
+downloads other projects' files, each under its own license:
 
 - [Surya](https://github.com/datalab-to/surya): code Apache-2.0. The model
   weights have a modified OpenRAIL-M license: free for personal use and
