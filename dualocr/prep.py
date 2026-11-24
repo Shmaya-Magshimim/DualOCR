@@ -157,7 +157,9 @@ def ocr_gray(img: Image.Image) -> Image.Image:
     sat = mx.astype(np.int16) - arr.min(axis=2).astype(np.int16)
     # Only light, colorful pixels (highlighter backgrounds) are brightened;
     # dark colored text (blue/red ink) keeps its luminance and stays dark.
-    mask = (sat > 60) & (lum > 140)
-    if mask.any():
+    light = lum > 140
+    mask = (sat > 60) & light
+    # Color over most of the paper is a tinted or yellowed page, not highlighter.
+    if mask.any() and mask.sum() < 0.6 * light.sum():
         lum[mask] = mx[mask]
     return Image.fromarray(lum, "L")

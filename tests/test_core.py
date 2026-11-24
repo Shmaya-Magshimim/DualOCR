@@ -218,3 +218,19 @@ def test_chosen_output_name(tmp_path):
     if target.suffix.lower() != ".docx":
         target = target.with_name(target.name + ".docx")
     assert target.name == "My Notes.docx"
+
+
+def test_ocr_gray_highlighter_vs_tinted_paper():
+    import numpy as np
+    from PIL import Image
+    from dualocr import prep
+    page = np.full((100, 100, 3), 255, np.uint8)
+    page[40:60, :] = (255, 240, 60)            # one highlighted line
+    page[48:52, 10:90] = (20, 20, 20)          # its text
+    g = np.asarray(prep.ocr_gray(Image.fromarray(page)))
+    assert g[42, 5] == 255 and g[50, 50] < 40
+    sepia = np.empty((100, 100, 3), np.uint8)
+    sepia[:] = (225, 195, 140)                 # yellowed paper everywhere
+    sepia[48:52, 10:90] = (60, 45, 30)
+    img = Image.fromarray(sepia)
+    assert np.array_equal(np.asarray(prep.ocr_gray(img)), np.asarray(img.convert("L")))
