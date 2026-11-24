@@ -75,6 +75,9 @@ def _probe_score(img: Image.Image, langs: str) -> float:
 
 def detect_orientation(img: Image.Image, langs: str = "heb+eng") -> OrientationResult:
     g = img.convert("L")
+    if max(g.size) < 1600:
+        # OSD misjudges small text, even upside down with high confidence.
+        g = g.resize((g.width * 2, g.height * 2), Image.LANCZOS)
     g.thumbnail((2600, 2600))
     out = _tess(g, ["--psm", "0", "-l", "osd"])
     m_rot = re.search(r"Rotate:\s*(\d+)", out)
