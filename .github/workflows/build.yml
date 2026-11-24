@@ -1,0 +1,47 @@
+# Runs the same setup a user runs, on all three systems: installs Tesseract,
+# downloads the models and llama.cpp, builds the app and checks the build.
+# (Surya's 1.4 GB model isn't downloaded here.)
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Tesseract (Windows runners have no winget)
+        if: runner.os == 'Windows'
+        run: choco install tesseract -y --no-progress
+
+      - name: Setup (macOS, Linux)
+        if: runner.os != 'Windows'
+        run: |
+          ./setup.sh --yes --skip-surya-model --no-install
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Setup (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          .\setup.cmd --yes --skip-surya-model --no-install
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          "$env:USERPROFILE\.local\bin" | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
+
+      - name: Unit tests
+        run: uv run --locked --extra build --extra dev pytest -q tests/test_core.py
+
+      - name: Window code loads
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: uv run --locked --extra build python -c "import dualocr.ui.app, dualocr.ui.review; print('ok')"

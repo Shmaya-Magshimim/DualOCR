@@ -1,0 +1,43 @@
+[project]
+name = "dualocr"
+version = "0.1.0"
+description = "Hebrew + English OCR to Word (DOCX) that combines Tesseract and Surya"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.12"
+dependencies = [
+    "surya-ocr==0.24.0",   # DualOCR uses Surya's llama.cpp inference API, which changes between versions
+    "pymupdf>=1.24",
+    "python-docx>=1.2",
+    "pillow>=10.2",
+    "pillow-heif",
+    "opencv-python-headless",
+    "numpy",
+    "PySide6-Essentials>=6.7",   # QtCore, QtGui, QtWidgets only
+    "keyring",
+    "rapidfuzz",
+    "spylls",
+    "httpx",
+    "python-bidi",
+]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+build = ["pyinstaller>=6.10"]
+
+[project.scripts]
+dualocr = "dualocr.__main__:main"
+dualocr-app = "dualocr.ui.app:main"
+
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["dualocr*"]
+
+[tool.setuptools.package-data]
+dualocr = ["ui/*.png"]
+
+[tool.pytest.ini_options]
+markers = ["slow: needs the OCR engines (takes minutes)"]

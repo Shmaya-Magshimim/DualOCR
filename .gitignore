@@ -1,0 +1,34 @@
+# Python / tools
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.DS_Store
+
+# downloaded by scripts/setup.py
+models/tessdata/*.traineddata
+models/lexicons/
+vendor/
+
+# build output
+build.noindex/
+build/
+dist/
+
+# your own jobs, settings and review data (when DUALOCR_DATA points here)
+data/
+jobs/
+
+# evaluation inputs: your own scans and answer keys stay on your computer
+eval/sources/
+eval/gold/
+eval/cache/
+eval/synth/
+
+# local helper scripts (not part of the project)
+scripts/dev/
+scripts/robust.py
+scripts/watch_job.sh
+scripts/install_when_closed.sh
+scripts/build_app.sh
